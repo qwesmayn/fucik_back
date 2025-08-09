@@ -1,0 +1,1 @@
+export type { ICreateProject } from './ICreateProject.interface';
