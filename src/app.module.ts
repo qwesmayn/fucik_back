@@ -4,6 +4,8 @@ import { ProjectsModule } from './projects/projects.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import { UserModule } from './user/user.module';
+import { DatabaseSeedService } from './common/database.seed';
+import { User } from './user/user.entity';
 
 @Module({
   imports: [
@@ -25,10 +27,11 @@ import { UserModule } from './user/user.module';
         synchronize: true,
       }),
     }),
+    TypeOrmModule.forFeature([User]),
     ProjectsModule,
     UserModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [DatabaseSeedService],
 })
 export class AppModule {}

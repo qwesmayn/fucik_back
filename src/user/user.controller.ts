@@ -30,27 +30,6 @@ export class UserController {
     return { message: 'Успешная авторизация' };
   }
 
-  @Post('sign-up')
-  @UseGuards(AuthGuard)
-  async signUp(
-    @Body() body: { username: string, password: string },
-    @Res({ passthrough: true }) res: Response
-  ) {
-    const result = await this.userService.signUp(body.username, body.password);
-    
-    res.cookie('access_token', result.access_token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 24 * 60 * 60 * 1000,
-    });
-
-    return { 
-      message: 'Пользователь успешно создан',
-      user: result.user
-    };
-  }
-
   @Post('logout')
   @UseGuards(AuthGuard)
   logout(@Res({ passthrough: true }) res: Response) {

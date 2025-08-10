@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Inject,
   Injectable,
   UnauthorizedException,
@@ -33,30 +32,6 @@ export class UserService {
     const payload = { sub: user.id, username: user.username };
     return {
       access_token: await this.jwtService.signAsync(payload),
-    };
-  }
-
-  async signUp(username: string, password: string) {
-    const user = await this.userRepository.findOne({ where: { username } });
-    if (user) {
-      throw new BadRequestException('User already exists');
-    }
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = this.userRepository.create({
-      username,
-      password: hashedPassword,
-    });
-    const savedUser = await this.userRepository.save(newUser);
-    const token = await this.jwtService.signAsync({
-      sub: savedUser.id,
-      username: savedUser.username,
-    });
-    return {
-      access_token: token,
-      user: {
-        id: savedUser.id,
-        username: savedUser.username
-      }
     };
   }
 }
