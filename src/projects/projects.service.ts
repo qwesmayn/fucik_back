@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 import { Project } from './projects.entity';
 import type { ICreateProject } from '../types/projects';
 import { existsSync, mkdirSync, renameSync } from 'fs';
@@ -19,6 +19,7 @@ export class ProjectsService {
 
   findLatest() {
     return this.projectRepository.find({
+      where: { position: Not(IsNull()) },
       order: { position: 'ASC', createdAt: 'DESC' },
       take: 8,
     });

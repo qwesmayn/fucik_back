@@ -31,6 +31,7 @@ export class UserController {
   }
 
   @Post('sign-up')
+  @UseGuards(AuthGuard)
   async signUp(
     @Body() body: { username: string, password: string },
     @Res({ passthrough: true }) res: Response
@@ -51,6 +52,7 @@ export class UserController {
   }
 
   @Post('logout')
+  @UseGuards(AuthGuard)
   logout(@Res({ passthrough: true }) res: Response) {
     res.clearCookie('access_token', {
       httpOnly: true,
