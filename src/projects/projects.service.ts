@@ -31,12 +31,29 @@ export class ProjectsService {
 
   async create(
     createProjectDto: ICreateProject,
-    files: Express.Multer.File[],
+    coverImage?: Express.Multer.File,
+    files?: Express.Multer.File[],
   ) {
     const project = this.projectRepository.create(createProjectDto);
     const savedProject = await this.projectRepository.save(project);
 
-    if (files) {
+    if (coverImage) {
+      const projectDir = join(
+        process.cwd(),
+        'uploads',
+        'projects',
+        savedProject.id.toString(),
+      );
+      if (!existsSync(projectDir)) {
+        mkdirSync(projectDir, { recursive: true });
+      }
+      const newPath = join(projectDir, coverImage.filename);
+      renameSync(coverImage.path, newPath);
+      createProjectDto.coverImage =
+        'uploads/projects/' + savedProject.id + '/' + coverImage.filename;
+    }
+
+    if (files && files.length > 0) {
       const projectDir = join(
         process.cwd(),
         'uploads',
@@ -64,13 +81,13 @@ export class ProjectsService {
             console.error('Error moving file:', error);
           }
         } else {
-          console.log(
-            `File ${fieldName} is missing path or filename:`,
-            file,
-          );
+          console.log(`File ${fieldName} is missing path or filename:`, file);
         }
       });
 
+      savedProject.coverImage = coverImage
+        ? 'uploads/projects/' + savedProject.id + '/' + coverImage.filename
+        : '';
       savedProject.files = fileNames;
 
       return this.projectRepository.save(savedProject);
@@ -82,14 +99,22 @@ export class ProjectsService {
   async update(
     id: string,
     updateProjectDto: Partial<ICreateProject>,
-    files: Express.Multer.File[],
+    coverImage?: Express.Multer.File,
+    files?: Express.Multer.File[],
   ) {
-
-    const existingProject = await this.projectRepository.findOne({ 
-      where: { id: parseInt(id) } 
+    const existingProject = await this.projectRepository.findOne({
+      where: { id: parseInt(id) },
     });
-    
+
     let currentFiles: string[] = existingProject?.files || [];
+
+    if (coverImage && coverImage.filename) {
+      const projectDir = join(process.cwd(), 'uploads', 'projects', id);
+      const newPath = join(projectDir, coverImage.filename);
+      renameSync(coverImage.path, newPath);
+      updateProjectDto.coverImage =
+        'uploads/projects/' + id + '/' + coverImage.filename;
+    }
 
     if (files && Object.keys(files).length > 0) {
       const projectDir = join(process.cwd(), 'uploads', 'projects', id);
@@ -112,10 +137,7 @@ export class ProjectsService {
             console.error('Error moving file:', error);
           }
         } else {
-          console.log(
-            `File ${fieldName} is missing path or filename:`,
-            file,
-          );
+          console.log(`File ${fieldName} is missing path or filename:`, file);
         }
       });
 

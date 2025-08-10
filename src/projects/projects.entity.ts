@@ -20,6 +20,9 @@ export class Project {
   @Column({ nullable: true })
   position: number;
 
+  @Column({ nullable: true })
+  coverImage: string;
+
   @Column('text', { array: true, nullable: true })
   files: string[];
 

@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import type { ICreateProject } from '../types/projects';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from 'src/core/auth.guard';
 
 @Controller('projects')
@@ -37,11 +37,21 @@ export class ProjectsController {
 
   @Post('create')
   @UseGuards(AuthGuard)
-  @UseInterceptors(FilesInterceptor('files', undefined, multerConfig))
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: 'coverImage', maxCount: 1 }, 
+        { name: 'files', maxCount: 20 }
+      ],
+      multerConfig,
+    ),
+  )
   create(
     @Request() req,
-    @UploadedFiles()
-    files: Express.Multer.File[],
+    @UploadedFiles() uploadedFiles: { 
+      coverImage?: Express.Multer.File[], 
+      files?: Express.Multer.File[] 
+    },
   ) {
     const createProjectDto: ICreateProject = {
       title: req.body.title,
@@ -50,24 +60,39 @@ export class ProjectsController {
         ? JSON.parse(req.body.technologies)
         : [],
       url: req.body.url,
-      position: req.body.position,
+      position: req.body.position ? parseInt(req.body.position) : 0,
+      coverImage: '',
       files: [],
     };
 
+    const coverImage = uploadedFiles?.coverImage?.[0];
+    const files = uploadedFiles?.files || [];
+
     return this.projectsService.create(
       createProjectDto,
-      files as Express.Multer.File[],
+      coverImage,
+      files,
     );
   }
 
   @Put(':id')
   @UseGuards(AuthGuard)
-  @UseInterceptors(FilesInterceptor('files', undefined, multerConfig))
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: 'coverImage', maxCount: 1 }, 
+        { name: 'files', maxCount: 20 }
+      ],
+      multerConfig,
+    ),
+  )
   update(
     @Request() req,
     @Param('id') id: string,
-    @UploadedFiles()
-    files: Express.Multer.File[],
+    @UploadedFiles() uploadedFiles: { 
+      coverImage?: Express.Multer.File[], 
+      files?: Express.Multer.File[] 
+    },
   ) {
     const updateProjectDto: Partial<ICreateProject> = {
       title: req.body.title,
@@ -76,14 +101,19 @@ export class ProjectsController {
         ? JSON.parse(req.body.technologies)
         : [],
       url: req.body.url,
-      position: req.body.position,
+      position: req.body.position ? parseInt(req.body.position) : 0,
+      coverImage: '',
       files: req.body.files,
     };
+
+    const coverImage = uploadedFiles?.coverImage?.[0];
+    const files = uploadedFiles?.files || [];
 
     return this.projectsService.update(
       id,
       updateProjectDto,
-      files as Express.Multer.File[],
+      coverImage,
+      files,
     );
   }
 

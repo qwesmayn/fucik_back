@@ -4,5 +4,6 @@ export interface ICreateProject {
   technologies: string[];
   url: string;
   position: number;
+  coverImage?: string;
   files?: string[];
 }
