@@ -34,6 +34,18 @@ export class ProjectsService {
     coverImage?: Express.Multer.File,
     files?: Express.Multer.File[],
   ) {
+    const existingProject = await this.projectRepository.findOne({
+      where: {
+        position: createProjectDto.position,
+      },
+    });
+
+    if (existingProject) {
+      await this.projectRepository.update(existingProject.id, {
+        position: undefined,
+      });
+    }
+
     const project = this.projectRepository.create(createProjectDto);
     const savedProject = await this.projectRepository.save(project);
 
@@ -105,6 +117,12 @@ export class ProjectsService {
     const existingProject = await this.projectRepository.findOne({
       where: { id: parseInt(id) },
     });
+
+    if (existingProject) {
+      await this.projectRepository.update(existingProject.id, {
+        position: undefined,
+      });
+    }
 
     let currentFiles: string[] = existingProject?.files || [];
 
