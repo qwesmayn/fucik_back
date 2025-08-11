@@ -102,7 +102,7 @@ export class ProjectsController {
         : [],
       url: req.body.url,
       position: req.body.position ? parseInt(req.body.position) : 0,
-      coverImage: '',
+      coverImage: req.body.coverImage,
       files: req.body.files,
     };
 
