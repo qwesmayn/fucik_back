@@ -41,9 +41,12 @@ export class ProjectsService {
     });
 
     if (existingProject) {
-      await this.projectRepository.update(existingProject.id, {
-        position: undefined,
-      });
+      await this.projectRepository
+        .createQueryBuilder()
+        .update(Project)
+        .set({ position: () => 'NULL' })
+        .where('id = :id', { id: existingProject.id })
+        .execute();
     }
 
     const project = this.projectRepository.create(createProjectDto);
@@ -118,10 +121,19 @@ export class ProjectsService {
       where: { id: parseInt(id) },
     });
 
-    if (existingProject) {
-      await this.projectRepository.update(existingProject.id, {
-        position: undefined,
-      });
+    const existingProjectByPosition = await this.projectRepository.findOne({
+      where: {
+        position: updateProjectDto.position,
+      },
+    });
+
+    if (existingProjectByPosition) {
+      await this.projectRepository
+        .createQueryBuilder()
+        .update(Project)
+        .set({ position: () => 'NULL' })
+        .where('id = :id', { id: existingProjectByPosition.id })
+        .execute();
     }
 
     let currentFiles: string[] = existingProject?.files || [];
